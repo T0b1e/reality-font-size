@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Font Size Preview with Physical Dimensions</title>
+  <style>
+
+@import url('https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+    body {
+      font-family: "Prompt", serif;
+      margin: 40px;
+      background-color: #f9f9f9;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+        font-family: "Prompt", serif;
+
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .styles {
+      display: flex;
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .styles label {
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .preview {
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fafafa;
+      min-height: 50px;
+      margin-bottom: 20px;
+      white-space: pre-wrap; /* Preserve whitespace */
+    }
+
+    .result, .calculation {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #eef;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .calculation {
+      background-color: #efe;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 800px) {
+      .container {
+        padding: 15px;
+      }
+
+      .preview {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Dynamic Font Size Preview with Physical Dimensions</h2>
+
+    <!-- Text Input -->
+    <div class="field">
+      <label for="text-input">Enter Text:</label>
+      <input type="text" id="text-input" placeholder="Type your text here" value="Sample Text">
+    </div>
+
+    <!-- Font Size Value Input -->
+    <div class="field">
+      <label for="font-size-input">Font Size Value:</label>
+      <input type="number" id="font-size-input" placeholder="Enter font size" value="16" min="1">
+    </div>
+
+    <!-- Font Size Unit Select (ComboBox) -->
+    <div class="field">
+      <label for="unit-select">Select Font Size Unit:</label>
+      <select id="unit-select">
+        <!-- Absolute Units -->
+        <optgroup label="Absolute Units">
+          <option value="px">px (Pixels)</option>
+          <option value="pt">pt (Points)</option>
+          <option value="cm">cm (Centimeters)</option>
+          <option value="mm">mm (Millimeters)</option>
+          <option value="in">in (Inches)</option>
+          <option value="pc">pc (Picas)</option>
+          <option value="Q">Q (Quarter-Millimeters)</option>
+        </optgroup>
+
+        <!-- Relative Units -->
+        <optgroup label="Relative Units">
+          <option value="em">em</option>
+          <option value="rem">rem</option>
+          <option value="%">%</option>
+          <option value="ch">ch</option>
+          <option value="ex">ex</option>
+          <option value="lh">lh</option>
+          <option value="vi">vi</option>
+          <option value="vb">vb</option>
+        </optgroup>
+
+        <!-- Viewport-Based Units -->
+        <optgroup label="Viewport-Based Units">
+          <option value="vw">vw (Viewport Width)</option>
+          <option value="vh">vh (Viewport Height)</option>
+          <option value="vmin">vmin</option>
+          <option value="vmax">vmax</option>
+        </optgroup>
+
+        <!-- Keyword Values -->
+        <optgroup label="Keyword Values">
+          <option value="xx-small">xx-small</option>
+          <option value="x-small">x-small</option>
+          <option value="small">small</option>
+          <option value="medium">medium</option>
+          <option value="large">large</option>
+          <option value="x-large">x-large</option>
+          <option value="xx-large">xx-large</option>
+          <option value="smaller">smaller</option>
+          <option value="larger">larger</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <!-- Font Family Select (ComboBox) -->
+    <div class="field">
+      <label for="font-family-select">Select Font Family:</label>
+      <select id="font-family-select">
+        <option value="Arial, sans-serif">Arial</option>
+        <option value="'Times New Roman', serif">Times New Roman</option>
+        <option value="'Courier New', monospace">Courier New</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="'Lucida Console', monospace">Lucida Console</option>
+        <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+        <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+        <option value="'Open Sans', sans-serif">Open Sans</option>
+        <option value="'Roboto', sans-serif">Roboto</option>
+        <option value="'Helvetica Neue', Helvetica, Arial, sans-serif">Helvetica Neue</option>
+        <!-- Add more font families as desired -->
+      </select>
+    </div>
+
+    <!-- Text Style Options -->
+    <div class="field">
+      <label>Text Styles:</label>
+      <div class="styles">
+        <label>
+          <input type="checkbox" id="bold-checkbox"> Bold
+        </label>
+        <label>
+          <input type="checkbox" id="italic-checkbox"> Italic
+        </label>
+      </div>
+    </div>
+
+    <!-- Display Area -->
+    <div class="preview" id="preview-area">
+      Sample Text
+    </div>
+
+    <!-- Result Display -->
+    <div class="result" id="result-display">
+      Font Size: 16px
+    </div>
+
+    <!-- Physical Dimensions Display -->
+    <div class="calculation" id="calculation-display">
+      Physical Size: Calculating...
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Get references to DOM elements
+      const textInput = document.getElementById('text-input');
+      const fontSizeInput = document.getElementById('font-size-input');
+      const unitSelect = document.getElementById('unit-select');
+      const fontFamilySelect = document.getElementById('font-family-select');
+      const boldCheckbox = document.getElementById('bold-checkbox');
+      const italicCheckbox = document.getElementById('italic-checkbox');
+      const previewArea = document.getElementById('preview-area');
+      const resultDisplay = document.getElementById('result-display');
+      const calculationDisplay = document.getElementById('calculation-display');
+
+      // Verify that all necessary elements are present
+      if (!textInput) console.error('Element with ID "text-input" not found.');
+      if (!fontSizeInput) console.error('Element with ID "font-size-input" not found.');
+      if (!unitSelect) console.error('Element with ID "unit-select" not found.');
+      if (!fontFamilySelect) console.error('Element with ID "font-family-select" not found.');
+      if (!boldCheckbox) console.error('Element with ID "bold-checkbox" not found.');
+      if (!italicCheckbox) console.error('Element with ID "italic-checkbox" not found.');
+      if (!previewArea) console.error('Element with ID "preview-area" not found.');
+      if (!resultDisplay) console.error('Element with ID "result-display" not found.');
+      if (!calculationDisplay) console.error('Element with ID "calculation-display" not found.');
+
+      // Add event listeners only if elements exist
+      if (boldCheckbox) {
+        boldCheckbox.addEventListener('change', () => {
+          updatePreview();
+          savePreferences();
+        });
+      }
+
+      if (italicCheckbox) {
+        italicCheckbox.addEventListener('change', () => {
+          updatePreview();
+          savePreferences();
+        });
+      }
+
+      if (textInput) {
+        textInput.addEventListener('input', () => {
+          updatePreview();
+          handleViewportUnits();
+          savePreferences();
+        });
+      }
+
+      if (fontSizeInput) {
+        fontSizeInput.addEventListener('input', () => {
+          updatePreview();
+          handleViewportUnits();
+          savePreferences();
+        });
+      }
+
+      if (unitSelect) {
+        unitSelect.addEventListener('change', () => {
+          updatePreview();
+          handleViewportUnits();
+          savePreferences();
+        });
+      }
+
+      if (fontFamilySelect) {
+        fontFamilySelect.addEventListener('change', () => {
+          updatePreview();
+          savePreferences();
+        });
+      }
+
+      // Initial setup
+      loadPreferences();
+      handleViewportUnits();
+
+      /**
+       * Function to estimate the device's PPI (Pixels Per Inch)
+       * @returns {number} Estimated PPI
+       */
+      function estimatePPI() {
+        try {
+          // Create a temporary element with 1 inch width
+          const div = document.createElement('div');
+          div.style.width = '1in';
+          div.style.height = '1in';
+          div.style.position = 'absolute';
+          div.style.left = '-100%'; // Move off-screen
+          document.body.appendChild(div);
+
+          // Measure the pixel width of 1 inch
+          const ppi = div.offsetWidth;
+
+          // Remove the temporary element
+          document.body.removeChild(div);
+
+          console.log(`Estimated PPI: ${ppi}`);
+
+          return ppi;
+        } catch (error) {
+          displayError('Failed to estimate PPI.');
+          console.error('Error in estimatePPI:', error);
+          return 96; // Default PPI
+        }
+      }
+
+      /**
+       * Function to calculate physical size in centimeters
+       * @param {number} fontSizeValue - The numerical font size value
+       * @param {string} fontUnit - The unit of the font size
+       * @param {number} ppi - Pixels Per Inch of the device
+       * @param {string} fontFamily - Selected font family
+       * @param {boolean} isBold - Whether bold is applied
+       * @param {boolean} isItalic - Whether italic is applied
+       * @returns {object} Physical width and height in cm
+       */
+      function calculatePhysicalSize(fontSizeValue, fontUnit, ppi, fontFamily, isBold, isItalic) {
+        try {
+          // Conversion factors to inches
+          const unitToInches = {
+            'px': 1 / ppi,
+            'pt': 1 / 72, // 1pt = 1/72 inches
+            'cm': 1 / 2.54,
+            'mm': 1 / 25.4,
+            'in': 1,
+            'pc': 1 / 6, // 1pc = 1/6 inches
+            'Q': 1 / 101.6, // 1Q = 0.25mm = 1/101.6 inches
+            'em': 16 / ppi, // Assuming default 16px
+            'rem': 16 / ppi, // Assuming root font size 16px
+            '%': 16 / ppi, // Assuming 100% = 16px
+            'ch': 8 / ppi, // Approximate average width of '0' character
+            'ex': 7 / ppi, // Approximate x-height
+            'lh': 16 / ppi, // Assuming line height = font size
+            'vi': 1 / ppi, // Viewport inline, approximate
+            'vb': 1 / ppi, // Viewport block, approximate
+            'vw': (window.innerWidth * 0.01) / ppi, // 1vw in inches
+            'vh': (window.innerHeight * 0.01) / ppi, // 1vh in inches
+            'vmin': (Math.min(window.innerWidth, window.innerHeight) * 0.01) / ppi,
+            'vmax': (Math.max(window.innerWidth, window.innerHeight) * 0.01) / ppi,
+            // Keyword values are more complex; we'll handle common ones
+            'xx-small': 0.583, // em units
+            'x-small': 0.667,
+            'small': 0.833,
+            'medium': 1,
+            'large': 1.2,
+            'x-large': 1.44,
+            'xx-large': 1.728,
+            'smaller': 0.833, // Relative to parent
+            'larger': 1.2 // Relative to parent
+          };
+
+          // Get conversion factor
+          let inches;
+          if (unitToInches[fontUnit]) {
+            inches = fontSizeValue * unitToInches[fontUnit];
+          } else {
+            inches = fontSizeValue * (1 / ppi); // Fallback to px
+            console.warn(`Unrecognized unit "${fontUnit}". Falling back to px.`);
+          }
+
+          console.log(`Font Size in inches: ${inches}`);
+
+          // Convert inches to centimeters
+          const cm = inches * 2.54;
+
+          console.log(`Font Size in cm: ${cm}`);
+
+          // Adjust for font family
+          // Different fonts have different average character widths
+          // We'll define average width multipliers for selected fonts
+          const fontWidthMultipliers = {
+            'Arial, sans-serif': 0.6,
+            "'Times New Roman', serif": 0.5,
+            "'Courier New', monospace": 0.55,
+            'Georgia, serif': 0.52,
+            "'Lucida Console', monospace": 0.58,
+            "'Comic Sans MS', cursive": 0.62,
+            "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif": 0.6,
+            "'Open Sans', sans-serif": 0.6,
+            "'Roboto', sans-serif": 0.6,
+            "'Helvetica Neue', Helvetica, Arial, sans-serif": 0.6,
+            // Default fallback
+            'default': 0.6
+          };
+
+          // Determine the multiplier based on selected font
+          const multiplier = fontWidthMultipliers[fontFamily] || fontWidthMultipliers['default'];
+
+          console.log(`Font Width Multiplier for "${fontFamily}": ${multiplier}`);
+
+          // Adjust multiplier for bold and italic styles
+          let styleMultiplier = 1;
+          if (isBold) styleMultiplier += 0.05; // Increase width by 5% for bold
+          if (isItalic) styleMultiplier += 0.03; // Increase width by 3% for italic
+
+          console.log(`Style Multiplier: ${styleMultiplier}`);
+
+          // Estimate height based on font size (approximation)
+          // Typically, height ≈ font size * 1.2 (line height)
+          let heightCm = cm * 1.2;
+
+          // Adjust height for bold and italic
+          if (isBold) heightCm *= 1.02; // Slightly increase height for bold
+          if (isItalic) heightCm *= 1.01; // Slightly increase height for italic
+
+          console.log(`Height in cm after style adjustments: ${heightCm}`);
+
+          // For width, estimate based on character count and average width
+          const avgCharWidth = multiplier * cm * styleMultiplier;
+          console.log(`Average Character Width: ${avgCharWidth} cm`);
+          const numChars = previewArea.textContent.length || 1; // Avoid division by zero
+          const widthCm = avgCharWidth * numChars;
+
+          console.log(`Width in cm: ${widthCm}`);
+
+          return {
+            width: widthCm.toFixed(3),
+            height: heightCm.toFixed(3)
+          };
+        } catch (error) {
+          displayError('Failed to calculate physical size.');
+          console.error('Error in calculatePhysicalSize:', error);
+          return {
+            width: 'N/A',
+            height: 'N/A'
+          };
+        }
+      }
+
+      /**
+       * Display error messages without causing recursive calls.
+       * @param {string} message - The error message to display.
+       */
+      function displayError(message) {
+        if (calculationDisplay) {
+          calculationDisplay.textContent = `Error: ${message}`;
+        }
+        console.error(`Error: ${message}`);
+      }
+
+      /**
+       * Update the preview text, apply font size, font family, styles, and calculate physical dimensions.
+       */
+      function updatePreview() {
+        try {
+          // Get the current values
+          const text = textInput ? textInput.value : '';
+          const fontSizeValue = fontSizeInput ? parseFloat(fontSizeInput.value) : 16;
+          const fontUnit = unitSelect ? unitSelect.value : 'px';
+          const fontFamily = fontFamilySelect ? fontFamilySelect.value : 'Arial, sans-serif';
+          const isBold = boldCheckbox ? boldCheckbox.checked : false;
+          const isItalic = italicCheckbox ? italicCheckbox.checked : false;
+
+          console.log(`Updating Preview with Text: "${text}", Font Size: ${fontSizeValue}${fontUnit}, Font Family: ${fontFamily}, Bold: ${isBold}, Italic: ${isItalic}`);
+
+          // Validate font size value
+          if (isNaN(fontSizeValue) || fontSizeValue <= 0) {
+            if (fontSizeInput) fontSizeInput.style.borderColor = 'red';
+            if (resultDisplay) resultDisplay.textContent = 'Please enter a valid font size value.';
+            if (calculationDisplay) calculationDisplay.textContent = 'Physical Size: N/A';
+            if (previewArea) {
+              previewArea.style.fontSize = 'inherit'; // Reset to default
+              previewArea.style.fontFamily = 'inherit';
+              previewArea.style.fontWeight = 'normal';
+              previewArea.style.fontStyle = 'normal';
+            }
+            console.log('Invalid font size value.');
+            return;
+          } else {
+            if (fontSizeInput) fontSizeInput.style.borderColor = '#ccc';
+          }
+
+          // Update the preview text
+          if (previewArea) {
+            previewArea.textContent = text;
+          }
+
+          // Apply the font size
+          if (previewArea) {
+            previewArea.style.fontSize = `${fontSizeValue}${fontUnit}`;
+          }
+
+          // Apply the font family
+          if (previewArea) {
+            previewArea.style.fontFamily = fontFamily;
+          }
+
+          // Apply text styles
+          if (previewArea) {
+            previewArea.style.fontWeight = isBold ? 'bold' : 'normal';
+            previewArea.style.fontStyle = isItalic ? 'italic' : 'normal';
+          }
+
+          // Update the result display
+          if (resultDisplay) {
+            resultDisplay.textContent = `Font Size: ${fontSizeValue}${fontUnit}`;
+          }
+
+          // Log to the console
+          console.log(`Applied Font Size: ${fontSizeValue}${fontUnit}`);
+          console.log(`Applied Font Family: ${fontFamily}`);
+          console.log(`Applied Styles: ${isBold ? 'Bold' : ''} ${isItalic ? 'Italic' : ''}`.trim());
+
+          // Estimate PPI
+          const ppi = estimatePPI();
+
+          // Calculate physical size
+          const physicalSize = calculatePhysicalSize(fontSizeValue, fontUnit, ppi, fontFamily, isBold, isItalic);
+          if (calculationDisplay) {
+            calculationDisplay.textContent = `Physical Size: Width ≈ ${physicalSize.width} cm, Height ≈ ${physicalSize.height} cm`;
+          }
+
+          // Log physical size to console
+          console.log(`Physical Size: Width ≈ ${physicalSize.width} cm, Height ≈ ${physicalSize.height} cm`);
+        } catch (error) {
+          displayError('An unexpected error occurred while updating the preview.');
+          console.error('Error in updatePreview:', error);
+        }
+      }
+
+      /**
+       * Function to handle units that require viewport measurements.
+       */
+      function handleViewportUnits() {
+        try {
+          const fontUnit = unitSelect ? unitSelect.value : 'px';
+          if (['vw', 'vh', 'vmin', 'vmax'].includes(fontUnit)) {
+            // For viewport units, recalculate on window resize
+            window.addEventListener('resize', updatePreview);
+          } else {
+            // Remove resize listener if not using viewport units
+            window.removeEventListener('resize', updatePreview);
+          }
+          console.log(`Resize listener set for unit: ${fontUnit}`);
+        } catch (error) {
+          displayError('Failed to handle viewport units.');
+          console.error('Error in handleViewportUnits:', error);
+        }
+      }
+
+      /**
+       * Save user preferences to localStorage.
+       */
+      function savePreferences() {
+        try {
+          if (textInput) localStorage.setItem('text', textInput.value);
+          if (fontSizeInput) localStorage.setItem('fontSizeValue', fontSizeInput.value);
+          if (unitSelect) localStorage.setItem('fontUnit', unitSelect.value);
+          if (fontFamilySelect) localStorage.setItem('fontFamily', fontFamilySelect.value);
+          if (boldCheckbox) localStorage.setItem('isBold', boldCheckbox.checked);
+          if (italicCheckbox) localStorage.setItem('isItalic', italicCheckbox.checked);
+          console.log('Preferences saved to localStorage.');
+        } catch (error) {
+          displayError('Failed to save preferences.');
+          console.error('Error in savePreferences:', error);
+        }
+      }
+
+      /**
+       * Load user preferences from localStorage.
+       */
+      function loadPreferences() {
+        try {
+          const savedText = localStorage.getItem('text');
+          const savedFontSize = localStorage.getItem('fontSizeValue');
+          const savedUnit = localStorage.getItem('fontUnit');
+          const savedFontFamily = localStorage.getItem('fontFamily');
+          const savedIsBold = localStorage.getItem('isBold') === 'true';
+          const savedIsItalic = localStorage.getItem('isItalic') === 'true';
+
+          if (textInput && savedText !== null) textInput.value = savedText;
+          if (fontSizeInput && savedFontSize !== null) fontSizeInput.value = savedFontSize;
+          if (unitSelect && savedUnit !== null) unitSelect.value = savedUnit;
+          if (fontFamilySelect && savedFontFamily !== null) fontFamilySelect.value = savedFontFamily;
+          if (boldCheckbox) boldCheckbox.checked = savedIsBold;
+          if (italicCheckbox) italicCheckbox.checked = savedIsItalic;
+
+          console.log('Preferences loaded from localStorage.');
+
+          updatePreview();
+        } catch (error) {
+          displayError('Failed to load preferences.');
+          console.error('Error in loadPreferences:', error);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
