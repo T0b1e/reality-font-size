@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AR View</title>
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <!-- AR.js -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000;
+    }
+
+    #close-ar {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      padding: 10px 20px;
+      background-color: rgba(255, 255, 255, 0.7);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #close-ar:hover {
+      background-color: rgba(255, 255, 255, 1);
+    }
+  </style>
+</head>
+<body>
+  <!-- Close AR Button -->
+  <button id="close-ar">Close AR</button>
+
+  <!-- AR Scene -->
+  <a-scene embedded arjs='sourceType: webcam;'>
+    <!-- AR Text -->
+    <a-text id="ar-text" value="Sample AR Text" position="0 0 0" rotation="0 0 0" color="#FF0000" scale="2 2 2"></a-text>
+  </a-scene>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const closeArButton = document.getElementById('close-ar');
+      const arText = document.getElementById('ar-text');
+
+      // Function to close the AR tab
+      closeArButton.addEventListener('click', () => {
+        window.close();
+      });
+
+      /**
+       * Function to parse URL query parameters
+       * @returns {object} Key-value pairs of parameters
+       */
+      function getQueryParams() {
+        const params = {};
+        window.location.search.substring(1).split('&').forEach(pair => {
+          const [key, value] = pair.split('=');
+          if (key) {
+            params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+          }
+        });
+        return params;
+      }
+
+      // Get parameters from URL
+      const params = getQueryParams();
+
+      // Update AR Text Content
+      if (params.text) {
+        arText.setAttribute('value', params.text);
+      }
+
+      // Update AR Text Color
+      if (params.color) {
+        arText.setAttribute('color', `#${params.color}`);
+      }
+
+      // Handle AR Scene loaded event to adjust video styling if necessary
+      const arScene = document.querySelector('a-scene');
+      arScene.addEventListener('loaded', () => {
+        console.log('AR Scene Loaded');
+        adjustARVideo();
+      });
+
+      arScene.addEventListener('error', (event) => {
+        alert('An error occurred while loading the AR scene.');
+        console.error('AR Scene Error:', event);
+      });
+
+      /**
+       * Function to adjust the AR video element's styling
+       */
+      function adjustARVideo() {
+        const arVideo = document.getElementById('arjs-video');
+        if (arVideo) {
+          arVideo.style.width = '100%';
+          arVideo.style.height = '100%';
+          arVideo.style.top = '0';
+          arVideo.style.left = '0';
+          arVideo.style.margin = '0';
+          arVideo.style.position = 'absolute';
+          arVideo.style.zIndex = '-2';
+          arVideo.style.objectFit = 'cover';
+        } else {
+          console.error('AR Video element not found.');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
