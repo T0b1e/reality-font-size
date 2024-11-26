@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ขนาดตัวอักษร กับ ขนาดจริง</title>
+  <title>Dynamic Font Size Preview with AR Integration</title>
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <!-- AR.js -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
+  <!-- Existing styles -->
   <style>
-
-@import url('https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap');
 
     body {
-      font-family: "Prompt", serif;
-      margin: 40px;
+      font-family: "Prompt", sans-serif;
+      margin: 0;
+      padding: 20px;
       background-color: #f9f9f9;
     }
 
@@ -34,14 +39,27 @@
 
     input[type="text"],
     input[type="number"],
-    select {
-        font-family: "Prompt", serif;
-
+    select,
+    button {
+      font-family: "Prompt", sans-serif;
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       box-sizing: border-box;
       border: 1px solid #ccc;
       border-radius: 4px;
+      margin-top: 5px;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
     }
 
     .styles {
@@ -65,6 +83,8 @@
       min-height: 50px;
       margin-bottom: 20px;
       white-space: pre-wrap; /* Preserve whitespace */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     .result, .calculation {
@@ -79,6 +99,33 @@
       background-color: #efe;
     }
 
+    /* AR Section Styles */
+    .ar-section {
+      margin-top: 40px;
+    }
+
+    .ar-section h3 {
+      margin-bottom: 20px;
+    }
+
+    .ar-container {
+      width: 100%;
+      height: 400px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #ar-scene {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: none; /* Hidden by default */
+    }
+
     /* Responsive Design */
     @media (max-width: 800px) {
       .container {
@@ -88,42 +135,60 @@
       .preview {
         padding: 15px;
       }
+
+      .ar-container {
+        height: 300px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .styles {
+        flex-direction: column;
+      }
+
+      button {
+        padding: 12px;
+      }
+
+      .ar-container {
+        height: 250px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>ตัวอย่างขนาดตัวอักษรแบบไดนามิกพร้อมขนาดจริง</h2>
+    <h2>Dynamic Font Size Preview with AR Integration</h2>
 
     <!-- Text Input -->
     <div class="field">
-      <label for="text-input">กรอกข้อความ:</label>
-      <input type="text" id="text-input" placeholder="พิมพ์ข้อความของคุณที่นี่" value="ข้อความตัวอย่าง">
+      <label for="text-input">Enter Text:</label>
+      <input type="text" id="text-input" placeholder="Type your text here" value="Sample Text">
     </div>
 
     <!-- Font Size Value Input -->
     <div class="field">
-      <label for="font-size-input">ขนาดตัวอักษร:</label>
-      <input type="number" id="font-size-input" placeholder="ใส่ขนาดตัวอักษร" value="16" min="1">
+      <label for="font-size-input">Font Size:</label>
+      <input type="number" id="font-size-input" placeholder="Enter font size" value="16" min="1">
     </div>
 
     <!-- Font Size Unit Select (ComboBox) -->
     <div class="field">
-      <label for="unit-select">เลือกหน่วยขนาดตัวอักษร:</label>
+      <label for="unit-select">Select Font Size Unit:</label>
       <select id="unit-select">
         <!-- Absolute Units -->
-        <optgroup label="หน่วยสัมบูรณ์">
-          <option value="px">px (พิกเซล)</option>
-          <option value="pt">pt (พอยต์)</option>
-          <option value="cm">cm (เซนติเมตร)</option>
-          <option value="mm">mm (มิลลิเมตร)</option>
-          <option value="in">in (นิ้ว)</option>
-          <option value="pc">pc (พิกัส)</option>
-          <option value="Q">Q (คิว)</option>
+        <optgroup label="Absolute Units">
+          <option value="px">px (Pixels)</option>
+          <option value="pt">pt (Points)</option>
+          <option value="cm">cm (Centimeters)</option>
+          <option value="mm">mm (Millimeters)</option>
+          <option value="in">in (Inches)</option>
+          <option value="pc">pc (Picas)</option>
+          <option value="Q">Q (Quarter-Millimeters)</option>
         </optgroup>
 
         <!-- Relative Units -->
-        <optgroup label="หน่วยสัมพัทธ์">
+        <optgroup label="Relative Units">
           <option value="em">em</option>
           <option value="rem">rem</option>
           <option value="%">%</option>
@@ -135,15 +200,15 @@
         </optgroup>
 
         <!-- Viewport-Based Units -->
-        <optgroup label="หน่วยตามขนาดหน้าจอ">
-          <option value="vw">vw (ความกว้างของหน้าจอ)</option>
-          <option value="vh">vh (ความสูงของหน้าจอ)</option>
+        <optgroup label="Viewport-Based Units">
+          <option value="vw">vw (Viewport Width)</option>
+          <option value="vh">vh (Viewport Height)</option>
           <option value="vmin">vmin</option>
           <option value="vmax">vmax</option>
         </optgroup>
 
         <!-- Keyword Values -->
-        <optgroup label="ค่าคีย์เวิร์ด">
+        <optgroup label="Keyword Values">
           <option value="xx-small">xx-small</option>
           <option value="x-small">x-small</option>
           <option value="small">small</option>
@@ -159,7 +224,7 @@
 
     <!-- Font Family Select (ComboBox) -->
     <div class="field">
-      <label for="font-family-select">เลือกประเภทตัวอักษร:</label>
+      <label for="font-family-select">Select Font Family:</label>
       <select id="font-family-select">
         <option value="Arial, sans-serif">Arial</option>
         <option value="'Times New Roman', serif">Times New Roman</option>
@@ -177,31 +242,49 @@
 
     <!-- Text Style Options -->
     <div class="field">
-      <label>สไตล์ข้อความ:</label>
+      <label>Text Styles:</label>
       <div class="styles">
         <label>
-          <input type="checkbox" id="bold-checkbox"> ตัวหนา
+          <input type="checkbox" id="bold-checkbox"> Bold
         </label>
         <label>
-          <input type="checkbox" id="italic-checkbox"> ตัวเอียง
+          <input type="checkbox" id="italic-checkbox"> Italic
         </label>
       </div>
     </div>
 
     <!-- Display Area -->
     <div class="preview" id="preview-area">
-      ข้อความตัวอย่าง
+      Sample Text
     </div>
 
     <!-- Result Display -->
     <div class="result" id="result-display">
-      ขนาดตัวอักษร: 16px
+      Font Size: 16px
     </div>
 
     <!-- Physical Dimensions Display -->
     <div class="calculation" id="calculation-display">
-      ขนาดจริง: กำลังคำนวณ...
+      Physical Size: Calculating...
     </div>
+
+    <!-- AR Section -->
+    <section class="ar-section">
+      <h3>Augmented Reality Feature</h3>
+      <!-- AR Session Button -->
+      <div class="field">
+        <button id="start-ar-button">Start AR Session</button>
+      </div>
+
+      <!-- AR Container -->
+      <div class="ar-container">
+        <!-- AR Scene -->
+        <a-scene id="ar-scene" embedded arjs='sourceType: webcam;' style="display: none;">
+          <!-- Sample Text in AR -->
+          <a-text id="ar-text" value="Sample AR Text" position="0 0 0" rotation="0 0 0" color="#FF0000" scale="2 2 2"></a-text>
+        </a-scene>
+      </div>
+    </section>
   </div>
 
   <script>
@@ -217,16 +300,24 @@
       const resultDisplay = document.getElementById('result-display');
       const calculationDisplay = document.getElementById('calculation-display');
 
+      // AR Elements
+      const startArButton = document.getElementById('start-ar-button');
+      const arScene = document.getElementById('ar-scene');
+      const arText = document.getElementById('ar-text');
+
       // Verify that all necessary elements are present
-      if (!textInput) console.error('ไม่พบองค์ประกอบที่มี ID "text-input".');
-      if (!fontSizeInput) console.error('ไม่พบองค์ประกอบที่มี ID "font-size-input".');
-      if (!unitSelect) console.error('ไม่พบองค์ประกอบที่มี ID "unit-select".');
-      if (!fontFamilySelect) console.error('ไม่พบองค์ประกอบที่มี ID "font-family-select".');
-      if (!boldCheckbox) console.error('ไม่พบองค์ประกอบที่มี ID "bold-checkbox".');
-      if (!italicCheckbox) console.error('ไม่พบองค์ประกอบที่มี ID "italic-checkbox".');
-      if (!previewArea) console.error('ไม่พบองค์ประกอบที่มี ID "preview-area".');
-      if (!resultDisplay) console.error('ไม่พบองค์ประกอบที่มี ID "result-display".');
-      if (!calculationDisplay) console.error('ไม่พบองค์ประกอบที่มี ID "calculation-display".');
+      if (!textInput) console.error('Element with ID "text-input" not found.');
+      if (!fontSizeInput) console.error('Element with ID "font-size-input" not found.');
+      if (!unitSelect) console.error('Element with ID "unit-select" not found.');
+      if (!fontFamilySelect) console.error('Element with ID "font-family-select" not found.');
+      if (!boldCheckbox) console.error('Element with ID "bold-checkbox" not found.');
+      if (!italicCheckbox) console.error('Element with ID "italic-checkbox" not found.');
+      if (!previewArea) console.error('Element with ID "preview-area" not found.');
+      if (!resultDisplay) console.error('Element with ID "result-display" not found.');
+      if (!calculationDisplay) console.error('Element with ID "calculation-display" not found.');
+      if (!startArButton) console.error('Element with ID "start-ar-button" not found.');
+      if (!arScene) console.error('Element with ID "ar-scene" not found.');
+      if (!arText) console.error('Element with ID "ar-text" not found.');
 
       // Add event listeners only if elements exist
       if (boldCheckbox) {
@@ -274,6 +365,64 @@
         });
       }
 
+      // AR Session Controls
+      if (startArButton && arScene && arText) {
+        let arSessionActive = false;
+
+        // Function to start and stop AR Session
+        startArButton.addEventListener('click', () => {
+          if (!arSessionActive) {
+            // Check for AR support
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+              navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                  arScene.style.display = 'block';
+                  startArButton.textContent = 'Stop AR Session';
+                  arSessionActive = true;
+                })
+                .catch(err => {
+                  displayError('Unable to access the camera for AR.');
+                  console.error('Camera Access Error:', err);
+                });
+            } else {
+              alert('Your device does not support AR.');
+              console.error('AR not supported in this browser.');
+            }
+          } else {
+            arScene.style.display = 'none';
+            startArButton.textContent = 'Start AR Session';
+            arSessionActive = false;
+          }
+        });
+
+        // Function to lock and unlock text position
+        arText.addEventListener('click', () => {
+          if (arText.getAttribute('rotation-lock') === 'true') {
+            // Unlock rotation
+            arText.removeAttribute('rotation-lock');
+            console.log('Unlocked text position');
+            alert('Text position unlocked');
+          } else {
+            // Lock rotation
+            arText.setAttribute('rotation-lock', 'true');
+            console.log('Locked text position');
+            alert('Text position locked');
+          }
+        });
+
+        // Optional: Add gesture controls or rotation restrictions
+        // Example: Prevent rotation if locked
+        arText.addEventListener('componentchanged', (event) => {
+          if (event.detail.name === 'rotation-lock' && arText.getAttribute('rotation-lock') === 'true') {
+            // Reset rotation to current locked state
+            const currentRotation = arText.getAttribute('rotation');
+            arText.setAttribute('rotation', currentRotation);
+          }
+        });
+      } else {
+        console.error('AR elements not found.');
+      }
+
       // Initial setup
       loadPreferences();
       handleViewportUnits();
@@ -302,7 +451,7 @@
 
           return ppi;
         } catch (error) {
-          displayError('ไม่สามารถประมาณค่า PPI ได้.');
+          displayError('Failed to estimate PPI.');
           console.error('Error in estimatePPI:', error);
           return 96; // Default PPI
         }
@@ -359,19 +508,19 @@
             inches = fontSizeValue * unitToInches[fontUnit];
           } else {
             inches = fontSizeValue * (1 / ppi); // Fallback to px
-            console.warn(`ไม่รู้จักหน่วย "${fontUnit}". ใช้ px แทน.`);
+            console.warn(`Unrecognized unit "${fontUnit}". Falling back to px.`);
           }
 
-          console.log(`ขนาดตัวอักษรในนิ้ว: ${inches}`);
+          console.log(`Font Size in inches: ${inches}`);
 
           // Convert inches to centimeters
           const cm = inches * 2.54;
 
-          console.log(`ขนาดตัวอักษรในเซนติเมตร: ${cm}`);
+          console.log(`Font Size in centimeters: ${cm}`);
 
           // Adjust for font family
           // Different fonts have different average character widths
-          // We'll define average width multipliers for selected fonts
+          // Define average width multipliers for selected fonts
           const fontWidthMultipliers = {
             'Arial, sans-serif': 0.6,
             "'Times New Roman', serif": 0.5,
@@ -390,39 +539,39 @@
           // Determine the multiplier based on selected font
           const multiplier = fontWidthMultipliers[fontFamily] || fontWidthMultipliers['default'];
 
-          console.log(`ตัวคูณความกว้างของตัวอักษรสำหรับ "${fontFamily}": ${multiplier}`);
+          console.log(`Font Width Multiplier for "${fontFamily}": ${multiplier}`);
 
           // Adjust multiplier for bold and italic styles
           let styleMultiplier = 1;
-          if (isBold) styleMultiplier += 0.05; // เพิ่มความกว้าง 5% สำหรับตัวหนา
-          if (isItalic) styleMultiplier += 0.03; // เพิ่มความกว้าง 3% สำหรับตัวเอียง
+          if (isBold) styleMultiplier += 0.05; // Increase width by 5% for bold
+          if (isItalic) styleMultiplier += 0.03; // Increase width by 3% for italic
 
-          console.log(`ตัวคูณสไตล์: ${styleMultiplier}`);
+          console.log(`Style Multiplier: ${styleMultiplier}`);
 
           // Estimate height based on font size (approximation)
           // Typically, height ≈ font size * 1.2 (line height)
           let heightCm = cm * 1.2;
 
           // Adjust height for bold and italic
-          if (isBold) heightCm *= 1.02; // เพิ่มความสูง 2% สำหรับตัวหนา
-          if (isItalic) heightCm *= 1.01; // เพิ่มความสูง 1% สำหรับตัวเอียง
+          if (isBold) heightCm *= 1.02; // Slightly increase height for bold
+          if (isItalic) heightCm *= 1.01; // Slightly increase height for italic
 
-          console.log(`ความสูงในเซนติเมตรหลังปรับสไตล์: ${heightCm}`);
+          console.log(`Height in cm after style adjustments: ${heightCm}`);
 
           // For width, estimate based on character count and average width
           const avgCharWidth = multiplier * cm * styleMultiplier;
-          console.log(`ความกว้างเฉลี่ยของตัวอักษร: ${avgCharWidth} เซนติเมตร`);
+          console.log(`Average Character Width: ${avgCharWidth} cm`);
           const numChars = previewArea.textContent.length || 1; // Avoid division by zero
           const widthCm = avgCharWidth * numChars;
 
-          console.log(`ความกว้างในเซนติเมตร: ${widthCm}`);
+          console.log(`Width in cm: ${widthCm}`);
 
           return {
             width: widthCm.toFixed(3),
             height: heightCm.toFixed(3)
           };
         } catch (error) {
-          displayError('ไม่สามารถคำนวณขนาดจริงได้.');
+          displayError('Failed to calculate physical size.');
           console.error('Error in calculatePhysicalSize:', error);
           return {
             width: 'N/A',
@@ -437,9 +586,9 @@
        */
       function displayError(message) {
         if (calculationDisplay) {
-          calculationDisplay.textContent = `ข้อผิดพลาด: ${message}`;
+          calculationDisplay.textContent = `Error: ${message}`;
         }
-        console.error(`ข้อผิดพลาด: ${message}`);
+        console.error(`Error: ${message}`);
       }
 
       /**
@@ -455,20 +604,20 @@
           const isBold = boldCheckbox ? boldCheckbox.checked : false;
           const isItalic = italicCheckbox ? italicCheckbox.checked : false;
 
-          console.log(`กำลังอัปเดตตัวอย่างด้วยข้อความ: "${text}", ขนาดตัวอักษร: ${fontSizeValue}${fontUnit}, ประเภทตัวอักษร: ${fontFamily}, ตัวหนา: ${isBold}, ตัวเอียง: ${isItalic}`);
+          console.log(`Updating Preview with Text: "${text}", Font Size: ${fontSizeValue}${fontUnit}, Font Family: ${fontFamily}, Bold: ${isBold}, Italic: ${isItalic}`);
 
           // Validate font size value
           if (isNaN(fontSizeValue) || fontSizeValue <= 0) {
             if (fontSizeInput) fontSizeInput.style.borderColor = 'red';
-            if (resultDisplay) resultDisplay.textContent = 'โปรดใส่ขนาดตัวอักษรที่ถูกต้อง.';
-            if (calculationDisplay) calculationDisplay.textContent = 'ขนาดจริง: ไม่สามารถคำนวณได้';
+            if (resultDisplay) resultDisplay.textContent = 'Please enter a valid font size.';
+            if (calculationDisplay) calculationDisplay.textContent = 'Physical Size: N/A';
             if (previewArea) {
               previewArea.style.fontSize = 'inherit'; // Reset to default
               previewArea.style.fontFamily = 'inherit';
               previewArea.style.fontWeight = 'normal';
               previewArea.style.fontStyle = 'normal';
             }
-            console.log('ขนาดตัวอักษรไม่ถูกต้อง.');
+            console.log('Invalid font size value.');
             return;
           } else {
             if (fontSizeInput) fontSizeInput.style.borderColor = '#ccc';
@@ -497,13 +646,13 @@
 
           // Update the result display
           if (resultDisplay) {
-            resultDisplay.textContent = `ขนาดตัวอักษร: ${fontSizeValue}${fontUnit}`;
+            resultDisplay.textContent = `Font Size: ${fontSizeValue}${fontUnit}`;
           }
 
           // Log to the console
-          console.log(`ขนาดตัวอักษรที่ถูกนำไปใช้: ${fontSizeValue}${fontUnit}`);
-          console.log(`ประเภทตัวอักษรที่ถูกนำไปใช้: ${fontFamily}`);
-          console.log(`สไตล์ที่ถูกนำไปใช้: ${isBold ? 'ตัวหนา' : ''} ${isItalic ? 'ตัวเอียง' : ''}`.trim());
+          console.log(`Applied Font Size: ${fontSizeValue}${fontUnit}`);
+          console.log(`Applied Font Family: ${fontFamily}`);
+          console.log(`Applied Styles: ${isBold ? 'Bold' : ''} ${isItalic ? 'Italic' : ''}`.trim());
 
           // Estimate PPI
           const ppi = estimatePPI();
@@ -511,13 +660,13 @@
           // Calculate physical size
           const physicalSize = calculatePhysicalSize(fontSizeValue, fontUnit, ppi, fontFamily, isBold, isItalic);
           if (calculationDisplay) {
-            calculationDisplay.textContent = `ขนาดจริง: ความกว้าง ≈ ${physicalSize.width} ซม., ความสูง ≈ ${physicalSize.height} ซม.`;
+            calculationDisplay.textContent = `Physical Size: Width ≈ ${physicalSize.width} cm, Height ≈ ${physicalSize.height} cm`;
           }
 
           // Log physical size to console
-          console.log(`ขนาดจริง: ความกว้าง ≈ ${physicalSize.width} ซม., ความสูง ≈ ${physicalSize.height} ซม.`);
+          console.log(`Physical Size: Width ≈ ${physicalSize.width} cm, Height ≈ ${physicalSize.height} cm`);
         } catch (error) {
-          displayError('เกิดข้อผิดพลาดขณะอัปเดตตัวอย่าง.');
+          displayError('An unexpected error occurred while updating the preview.');
           console.error('Error in updatePreview:', error);
         }
       }
@@ -535,9 +684,9 @@
             // Remove resize listener if not using viewport units
             window.removeEventListener('resize', updatePreview);
           }
-          console.log(`ตั้งค่าการฟังเหตุการณ์ resize สำหรับหน่วย: ${fontUnit}`);
+          console.log(`Added resize listener for unit: ${fontUnit}`);
         } catch (error) {
-          displayError('ไม่สามารถจัดการกับหน่วยตามขนาดหน้าจอได้.');
+          displayError('Failed to handle viewport units.');
           console.error('Error in handleViewportUnits:', error);
         }
       }
@@ -553,9 +702,9 @@
           if (fontFamilySelect) localStorage.setItem('fontFamily', fontFamilySelect.value);
           if (boldCheckbox) localStorage.setItem('isBold', boldCheckbox.checked);
           if (italicCheckbox) localStorage.setItem('isItalic', italicCheckbox.checked);
-          console.log('บันทึกการตั้งค่าไปยัง localStorage แล้ว.');
+          console.log('Preferences saved to localStorage.');
         } catch (error) {
-          displayError('ไม่สามารถบันทึกการตั้งค่าได้.');
+          displayError('Failed to save preferences.');
           console.error('Error in savePreferences:', error);
         }
       }
@@ -579,11 +728,11 @@
           if (boldCheckbox) boldCheckbox.checked = savedIsBold;
           if (italicCheckbox) italicCheckbox.checked = savedIsItalic;
 
-          console.log('โหลดการตั้งค่าจาก localStorage แล้ว.');
+          console.log('Preferences loaded from localStorage.');
 
           updatePreview();
         } catch (error) {
-          displayError('ไม่สามารถโหลดการตั้งค่าได้.');
+          displayError('Failed to load preferences.');
           console.error('Error in loadPreferences:', error);
         }
       }
